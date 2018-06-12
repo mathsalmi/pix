@@ -3,7 +3,7 @@ Pix
 
 Pix is an image server able to apply image transformations (resize, crop, filters, nude detection and so on).
 
-__Pix is still a Work in Progress__
+__Pix still is a Work in Progress__
 
 How it works
 ------------
