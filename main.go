@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net/http"
 
@@ -20,5 +19,5 @@ func main() {
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Hello world!")
+	http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 }
