@@ -3,9 +3,18 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
 
 func main() {
 	// setup routes
@@ -15,7 +24,8 @@ func main() {
 	router.HandleFunc("/{image}.{extension}", handleDownload).Methods("GET")
 
 	// serve
-	log.Fatal(http.ListenAndServe(":8000", router))
+	serverPort := os.Getenv("SERVER_PORT")
+	log.Fatal(http.ListenAndServe(":"+serverPort, router))
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
