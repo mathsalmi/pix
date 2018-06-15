@@ -2,16 +2,26 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
+	"github.com/anthonynsimon/bild/imgio"
 	"github.com/gorilla/mux"
 )
 
-func handleDownload(w http.ResponseWriter, r *http.Request) {
+// HandleDownload writes the requested image to the response.
+//
+// It may optionally apply effects and transformations on images, as
+// requested in the URL.
+//
+// In case a file does not exist or any I/O error occurs, it will write
+// an HTTP error response, like 404 (not found) or 500 (internal server error).
+func HandleDownload(w http.ResponseWriter, r *http.Request) {
 	var (
 		uploadDir = os.Getenv("UPLOAD_DIR")
 		vars      = mux.Vars(r)
@@ -33,7 +43,24 @@ func handleDownload(w http.ResponseWriter, r *http.Request) {
 
 	filepath := filepaths[0]
 
-	data, err := ioutil.ReadFile(filepath)
+	img, err := imgio.Open(filepath)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	options := parseOptions(r, extension, &img)
+
+	ApplyEffects(&img, options)
+
+	newpath := fmt.Sprintf("%s/%s-%d.%s", uploadDir, filename, time.Now().Unix(), extension)
+	if err := imgio.Save(newpath, img, options.Encoder()); err != nil {
+		fail(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	// deliver
+	data, err := ioutil.ReadFile(newpath)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -46,7 +73,7 @@ func handleDownload(w http.ResponseWriter, r *http.Request) {
 }
 
 func validateExtension(extension string) error {
-	exts := []string{"jpeg", "jpg", "png", "gif"}
+	exts := []string{"jpeg", "jpg", "png", "gif", "bmp"}
 
 	for _, e := range exts {
 		if e == extension {
@@ -55,4 +82,14 @@ func validateExtension(extension string) error {
 	}
 
 	return ErrInvalidExtension
+}
+
+// ApplyEffects applies effects and transformations to the given image
+func ApplyEffects(img *image.Image, options options) error {
+	if options.Has("width") || options.Has("height") {
+		if width, height, err := options.Resize(); err == nil {
+			applyResize(img, width, height)
+		}
+	}
+	return nil
 }

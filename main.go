@@ -17,17 +17,13 @@ func init() {
 }
 
 func main() {
-	// setup routes
+	// setup default routes
 	router := mux.NewRouter()
-	router.HandleFunc("/", handleIndex).Methods("GET")
-	router.HandleFunc("/", handleUpload).Methods("POST")
-	router.HandleFunc("/{image}.{extension}", handleDownload).Methods("GET")
+	router.HandleFunc("/", HandleNotAllowedMethod).Methods("GET")
+	router.HandleFunc("/", HandleUpload).Methods("POST")
+	router.HandleFunc("/{image}.{extension}", HandleDownload).Methods("GET")
 
 	// serve
 	serverPort := os.Getenv("SERVER_PORT")
 	log.Fatal(http.ListenAndServe(":"+serverPort, router))
-}
-
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 }
