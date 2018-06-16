@@ -101,6 +101,23 @@ func (o options) Quality() int {
 	return number
 }
 
+// NumColors returns the maximum number of colors used in GIF images.
+//
+// It ranges from 1 to 256.
+func (o options) NumColors() int {
+	value, ok := o["numcolors"]
+	if !ok {
+		return 256
+	}
+
+	number, err := strconv.Atoi(value)
+	if err != nil || number < 1 || number > 256 {
+		return 256
+	}
+
+	return number
+}
+
 // Encoder returns the image encoder accordingly to the desired
 // image extension
 func (o options) Encoder() imgio.Encoder {
@@ -112,7 +129,7 @@ func (o options) Encoder() imgio.Encoder {
 	case "bmp":
 		return imgio.BMPEncoder()
 	case "gif":
-		return GIFEncoder(256)
+		return GIFEncoder(o.NumColors())
 	}
 	return nil
 }
