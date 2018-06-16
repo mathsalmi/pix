@@ -4,6 +4,7 @@ import (
 	"image"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/anthonynsimon/bild/imgio"
 )
@@ -132,4 +133,69 @@ func (o options) Resize() (int, int, error) {
 	// TODO(salmi): put a max file width/height check here?
 
 	return width, height, nil
+}
+
+// Crop checks the values for cropping the image.
+//
+// It has to be applied to the original image, so the execution
+// order of transformation functions matters in this case.
+func (o options) Crop() (width int, height int, x int, y int, err error) {
+	s, ok := o["crop"]
+	if !ok {
+		err = ErrOptionNotProvided
+		return
+	}
+
+	values := make(map[string]int)
+
+	// value is crop=w:300|h:300|x:20|y:30
+	pairs := strings.Split(s, "|")
+	for _, pair := range pairs {
+		v := strings.Split(pair, ":")
+		if len(v) != 2 {
+			err = ErrInvalidOptionValues
+			return
+		}
+
+		key := v[0]
+		value, e := strconv.Atoi(v[1])
+		if e != nil {
+			err = ErrInvalidOptionValues
+			return
+		}
+
+		// check boundaries - fast fail
+		if value < 0 {
+			err = ErrInvalidOptionValues
+			return
+		}
+
+		values[key] = value
+	}
+
+	width, hasWidth := values["w"]
+	height, hasHeight := values["h"]
+	x, hasX := values["x"]
+	y, hasY := values["y"]
+
+	if !hasWidth || !hasHeight || !hasX || !hasY {
+		err = ErrInvalidOptionValues
+		return
+	}
+
+	originalWidth := o["original_width"]
+	originalHeight := o["original_height"]
+
+	// check boundaries
+	if w, _ := strconv.Atoi(originalWidth); x > w || x+width > w {
+		err = ErrInvalidOptionValues
+		return
+	}
+
+	if h, _ := strconv.Atoi(originalHeight); y > h || y+height > h {
+		err = ErrInvalidOptionValues
+		return
+	}
+
+	return
 }
