@@ -17,9 +17,10 @@ Options
 * resize :heavy_check_mark:
 * crop :heavy_check_mark:
 * flip vertical / horizontal :heavy_check_mark:
+* extension conversion :heavy_check_mark:
 * nude detection
-* interlace
-* extension conversion
+* JPEG interlace
+* properly handle animated GIF
 * custom URLs: create virtual hosts and associate a set of rules, like: `/user-pictures/file1.jpg`
 * work like a pipe (effects/transformations are applied from left to right order)
 
