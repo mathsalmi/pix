@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"image"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -82,14 +81,4 @@ func validateExtension(extension string) error {
 	}
 
 	return ErrInvalidExtension
-}
-
-// ApplyEffects applies effects and transformations to the given image
-func ApplyEffects(img *image.Image, options options) error {
-	if options.Has("width") || options.Has("height") {
-		if width, height, err := options.Resize(); err == nil {
-			applyResize(img, width, height)
-		}
-	}
-	return nil
 }

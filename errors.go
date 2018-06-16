@@ -10,6 +10,7 @@ var (
 	ErrInvalidExtension  = errors.New("pix: invalid extension")
 	ErrOptionNotProvided = errors.New("pix: cannot parse values because this option was not provided")
 	ErrInvalidDimensions = errors.New("pix: invalid image dimensions")
+	ErrEffectNotApplied  = errors.New("pix: effect not applied")
 )
 
 func fail(w http.ResponseWriter, err error, code int) {
