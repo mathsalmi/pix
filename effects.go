@@ -13,13 +13,13 @@ func ApplyEffects(img *image.Image, options options) {
 }
 
 // applyResize resizes the given image given the options
-func applyResize(image *image.Image, options options) error {
+func applyResize(img *image.Image, options options) error {
 	width, height, err := options.Resize()
 	if err != nil {
 		return ErrEffectNotApplied
 	}
 
-	*image = transform.Resize(*image, width, height, transform.Linear)
+	*img = transform.Resize(*img, width, height, transform.Linear)
 	return nil
 }
 
