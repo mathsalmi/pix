@@ -45,44 +45,6 @@ func (o options) Extension() string {
 	return o["extension"]
 }
 
-// Resize calculates the new values for resizing the image.
-func (o options) Resize() (int, int, error) {
-	oWidth, hasWidth := o["width"]
-	oHeight, hasHeight := o["height"]
-
-	ooWidth, _ := o["original_width"]
-	ooHeight, _ := o["original_height"]
-
-	if !hasWidth && !hasHeight {
-		return 0, 0, ErrOptionNotProvided
-	}
-
-	width, height := 0, 0
-	originalWidth, _ := strconv.Atoi(ooWidth)
-	originalHeight, _ := strconv.Atoi(ooHeight)
-
-	// calculate values
-	if hasWidth && hasHeight {
-		width, _ = strconv.Atoi(oWidth)
-		height, _ = strconv.Atoi(oHeight)
-	} else if hasWidth && !hasHeight {
-		width, _ = strconv.Atoi(oWidth)
-		height = (width * originalHeight) / originalWidth
-	} else if !hasWidth && hasHeight {
-		height, _ = strconv.Atoi(oHeight)
-		width = (height * originalWidth) / originalHeight
-	}
-
-	// check boundaries
-	if width < 0 || height < 0 {
-		return 0, 0, ErrInvalidDimensions
-	}
-
-	// TODO(salmi): put a max file width/height check here?
-
-	return width, height, nil
-}
-
 // Quality returns the picture quality for JPEG images.
 //
 // If the provided value is an invalid number, less than 1,
@@ -132,4 +94,42 @@ func (o options) Encoder() imgio.Encoder {
 		return GIFEncoder(o.NumColors())
 	}
 	return nil
+}
+
+// Resize calculates the new values for resizing the image.
+func (o options) Resize() (int, int, error) {
+	oWidth, hasWidth := o["width"]
+	oHeight, hasHeight := o["height"]
+
+	ooWidth, _ := o["original_width"]
+	ooHeight, _ := o["original_height"]
+
+	if !hasWidth && !hasHeight {
+		return 0, 0, ErrOptionNotProvided
+	}
+
+	width, height := 0, 0
+	originalWidth, _ := strconv.Atoi(ooWidth)
+	originalHeight, _ := strconv.Atoi(ooHeight)
+
+	// calculate values
+	if hasWidth && hasHeight {
+		width, _ = strconv.Atoi(oWidth)
+		height, _ = strconv.Atoi(oHeight)
+	} else if hasWidth && !hasHeight {
+		width, _ = strconv.Atoi(oWidth)
+		height = (width * originalHeight) / originalWidth
+	} else if !hasWidth && hasHeight {
+		height, _ = strconv.Atoi(oHeight)
+		width = (height * originalWidth) / originalHeight
+	}
+
+	// check boundaries
+	if width < 0 || height < 0 {
+		return 0, 0, ErrInvalidDimensions
+	}
+
+	// TODO(salmi): put a max file width/height check here?
+
+	return width, height, nil
 }
