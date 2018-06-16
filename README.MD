@@ -1,9 +1,9 @@
+:exclamation: **Work in Progress** :exclamation:
+
 Pix
 ===
 
 Pix is an image server able to apply image transformations (resize, crop, filters, nude detection and so on).
-
-__Pix still is a Work in Progress__
 
 How it works
 ------------
@@ -13,8 +13,9 @@ Pix is a server designed to be an image repository. First you upload any picture
 Options
 -------
 
+* support for BMP, GIF, JPEG, PNG :heavy_check_mark:
+* resize :heavy_check_mark:
 * crop
-* resize
 * nude detection
 * interlace
 * extension conversion
@@ -23,14 +24,7 @@ Options
 URLs
 ----
 
-* Upload images
-
-```
-POST /
-```
-
-* Retrieving images and optionally apply transformations
-
-```
-GET /image_name.extension?option1=value1&option2=value2...&optionN=valueN
-```
+| Verb | Path | Description |
+| ---- | ---- | ----------- |
+| POST | /    | Upload images |
+| GET  | /`{image_name}`.`{extension}`?`option1=value1...&optionN=valueN` | Retrieve images and optionally apply effects and transformations |
