@@ -4,11 +4,14 @@ import (
 	"image"
 
 	"github.com/anthonynsimon/bild/transform"
+	"github.com/muesli/smartcrop"
+	"github.com/muesli/smartcrop/nfnt"
 )
 
 // ApplyEffects applies effects and transformations to the given image
 func ApplyEffects(img *image.Image, options options) {
 	applyCrop(img, options)
+	applySmartCrop(img, options)
 	applyResize(img, options)
 	applyFlipH(img, options)
 	applyFlipV(img, options)
@@ -37,6 +40,24 @@ func applyCrop(img *image.Image, options options) error {
 	y1 := y + height
 
 	*img = transform.Crop(*img, image.Rect(x, y, x1, y1))
+	return nil
+}
+
+// applySmartCrop crops the image using the Smart Crop algorithm
+// applying the provided options
+func applySmartCrop(img *image.Image, options options) error {
+	width, height, err := options.SmartCrop()
+	if err != nil {
+		return ErrEffectNotApplied
+	}
+
+	analyzer := smartcrop.NewAnalyzer(nfnt.NewDefaultResizer())
+	rect, err := analyzer.FindBestCrop(*img, width, height)
+	if err != nil {
+		return ErrEffectNotApplied
+	}
+
+	*img = transform.Crop(*img, rect)
 	return nil
 }
 

@@ -146,31 +146,10 @@ func (o options) Crop() (width int, height int, x int, y int, err error) {
 		return
 	}
 
-	values := make(map[string]int)
-
-	// value is crop=w:300|h:300|x:20|y:30
-	pairs := strings.Split(s, "|")
-	for _, pair := range pairs {
-		v := strings.Split(pair, ":")
-		if len(v) != 2 {
-			err = ErrInvalidOptionValues
-			return
-		}
-
-		key := v[0]
-		value, e := strconv.Atoi(v[1])
-		if e != nil {
-			err = ErrInvalidOptionValues
-			return
-		}
-
-		// check boundaries - fast fail
-		if value < 0 {
-			err = ErrInvalidOptionValues
-			return
-		}
-
-		values[key] = value
+	values, e := parseCropString(s)
+	if e != nil {
+		err = ErrInvalidOptionValues
+		return
 	}
 
 	width, hasWidth := values["w"]
@@ -200,6 +179,48 @@ func (o options) Crop() (width int, height int, x int, y int, err error) {
 	return
 }
 
+// SmartCrop gets the options to apply the smart crop algorithm
+//
+// It has to be applied to the original image, so the execution
+// order of transformation functions matters in this case.
+func (o options) SmartCrop() (width, height int, err error) {
+	s, ok := o["smartcrop"]
+	if !ok {
+		err = ErrOptionNotProvided
+		return
+	}
+
+	values, e := parseCropString(s)
+	if e != nil {
+		err = ErrInvalidOptionValues
+		return
+	}
+
+	width, hasWidth := values["w"]
+	height, hasHeight := values["h"]
+
+	if !hasWidth || !hasHeight {
+		err = ErrInvalidOptionValues
+		return
+	}
+
+	originalWidth := o["original_width"]
+	originalHeight := o["original_height"]
+
+	// check boundaries
+	if w, _ := strconv.Atoi(originalWidth); width > w {
+		err = ErrInvalidOptionValues
+		return
+	}
+
+	if h, _ := strconv.Atoi(originalHeight); height > h {
+		err = ErrInvalidOptionValues
+		return
+	}
+
+	return
+}
+
 // FlipH tells whether or not to apply the horizontal
 // flip transformation
 func (o options) FlipH() error {
@@ -220,4 +241,40 @@ func (o options) FlipV() error {
 	}
 
 	return nil
+}
+
+// parseCropString parses the crop string and returns
+// a map contain the values.
+//
+// The string looks like: `w:300|h:300|x:20|y:30` and
+// it may contain less or more values depending on the
+// context it is being applied
+func parseCropString(s string) (values map[string]int, err error) {
+	values = make(map[string]int)
+
+	pairs := strings.Split(s, "|")
+	for _, pair := range pairs {
+		v := strings.Split(pair, ":")
+		if len(v) != 2 {
+			err = ErrInvalidOptionValues
+			return
+		}
+
+		key := v[0]
+		value, e := strconv.Atoi(v[1])
+		if e != nil {
+			err = ErrInvalidOptionValues
+			return
+		}
+
+		// check boundaries - fast fail
+		if value < 0 {
+			err = ErrInvalidOptionValues
+			return
+		}
+
+		values[key] = value
+	}
+
+	return
 }
