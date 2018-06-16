@@ -10,6 +10,8 @@ import (
 func ApplyEffects(img *image.Image, options options) {
 	applyCrop(img, options)
 	applyResize(img, options)
+	applyFlipH(img, options)
+	applyFlipV(img, options)
 }
 
 // applyResize resizes the given image given the options
@@ -35,5 +37,27 @@ func applyCrop(img *image.Image, options options) error {
 	y1 := y + height
 
 	*img = transform.Crop(*img, image.Rect(x, y, x1, y1))
+	return nil
+}
+
+// applyFlipH flips image horizontally
+func applyFlipH(img *image.Image, options options) error {
+	err := options.FlipH()
+	if err != nil {
+		return ErrEffectNotApplied
+	}
+
+	*img = transform.FlipH(*img)
+	return nil
+}
+
+// applyFlipV flips image vertically
+func applyFlipV(img *image.Image, options options) error {
+	err := options.FlipV()
+	if err != nil {
+		return ErrEffectNotApplied
+	}
+
+	*img = transform.FlipV(*img)
 	return nil
 }

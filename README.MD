@@ -16,6 +16,7 @@ Options
 * support for BMP, GIF, JPEG, PNG :heavy_check_mark:
 * resize :heavy_check_mark:
 * crop :heavy_check_mark:
+* flip vertical / horizontal :heavy_check_mark:
 * nude detection
 * interlace
 * extension conversion

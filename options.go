@@ -199,3 +199,25 @@ func (o options) Crop() (width int, height int, x int, y int, err error) {
 
 	return
 }
+
+// FlipH tells whether or not to apply the horizontal
+// flip transformation
+func (o options) FlipH() error {
+	_, ok := o["flipH"]
+	if !ok {
+		return ErrOptionNotProvided
+	}
+
+	return nil
+}
+
+// FlipV tells whether or not to apply the vertical
+// flip transformation
+func (o options) FlipV() error {
+	_, ok := o["flipV"]
+	if !ok {
+		return ErrOptionNotProvided
+	}
+
+	return nil
+}
