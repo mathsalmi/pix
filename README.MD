@@ -20,6 +20,7 @@ Options
 * interlace
 * extension conversion
 * custom URLs: create virtual hosts and associate a set of rules, like: `/user-pictures/file1.jpg`
+* work like a pipe (effects/transformations are applied from left to right order)
 
 URLs
 ----
