@@ -5,6 +5,17 @@ import (
 	"net/http"
 )
 
+// General error codes
+var (
+	ErrNotImplemented = errors.New("pix: not implemented")
+)
+
+// Error codes used in CLI flag parsing
+var (
+	ErrInvalidFlag         = errors.New("pix: invalid flag provided")
+	ErrCacheNoFilesDeleted = errors.New("pix: no files deleted")
+)
+
 // Error codes returned by the download process
 var (
 	ErrInvalidExtension = errors.New("pix: invalid extension")
