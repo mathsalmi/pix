@@ -19,6 +19,7 @@ Options
 * smart crop :heavy_check_mark:
 * flip vertical / horizontal :heavy_check_mark:
 * extension conversion :heavy_check_mark:
+* command to delete cached images :heavy_check_mark:
 * nude detection
 * JPEG interlace
 * properly handle animated GIF
