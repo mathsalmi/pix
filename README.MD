@@ -20,11 +20,11 @@ Options
 * flip vertical / horizontal :heavy_check_mark:
 * extension conversion :heavy_check_mark:
 * command to delete cached images :heavy_check_mark:
+* cache images :heavy_check_mark:
 * nude detection
 * JPEG interlace
 * properly handle animated GIF
 * custom URLs: create virtual hosts and associate a set of rules, like: `/user-pictures/file1.jpg`
-* work like a pipe (effects/transformations are applied from left to right order)
 
 URLs
 ----
