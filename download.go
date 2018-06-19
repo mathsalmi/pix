@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
 
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/gorilla/mux"
@@ -23,6 +22,7 @@ import (
 func HandleDownload(w http.ResponseWriter, r *http.Request) {
 	var (
 		uploadDir = os.Getenv("UPLOAD_DIR")
+
 		vars      = mux.Vars(r)
 		filename  = vars["image"]
 		extension = vars["extension"]
@@ -49,13 +49,15 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	options := parseOptions(r, extension, &img)
+	newpath := createNewPath(filename, extension, options)
 
-	ApplyEffects(&img, options)
+	if !isCached(newpath) {
+		ApplyEffects(&img, options)
 
-	newpath := fmt.Sprintf("%s/%s-%d.%s", uploadDir, filename, time.Now().Unix(), extension)
-	if err := imgio.Save(newpath, img, options.Encoder()); err != nil {
-		fail(w, err, http.StatusInternalServerError)
-		return
+		if err := imgio.Save(newpath, img, options.Encoder()); err != nil {
+			fail(w, err, http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// deliver
@@ -71,6 +73,8 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// validateExtension returns ErrInvalidExtension if the given extension is
+// invalid or nil if it is valid.
 func validateExtension(extension string) error {
 	exts := []string{"jpeg", "jpg", "png", "gif", "bmp"}
 
@@ -81,4 +85,16 @@ func validateExtension(extension string) error {
 	}
 
 	return ErrInvalidExtension
+}
+
+// createNewPath returns the filename for an image given its name, extension and options
+func createNewPath(filename, extension string, options options) string {
+	uploadDir := os.Getenv("UPLOAD_DIR")
+	return fmt.Sprintf("%s/%s-%s.%s", uploadDir, filename, options.Hash(), extension)
+}
+
+// isCached returns true if image already exists or false if it does not
+func isCached(filepath string) bool {
+	_, err := os.Stat(filepath)
+	return !os.IsNotExist(err)
 }

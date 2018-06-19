@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"crypto/md5"
+	"fmt"
 	"image"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -38,6 +42,26 @@ type options map[string]string
 // Extension returns the desired extension
 func (o options) Extension() string {
 	return o["extension"]
+}
+
+// Hash returns a unique string MD5 encoded that represents the
+// transformation options provided.
+func (o options) Hash() string {
+	b := new(bytes.Buffer)
+
+	s := make([]string, 0, len(o))
+	for key := range o {
+		s = append(s, key)
+	}
+
+	sort.Strings(s)
+
+	for _, key := range s {
+		value := o[key]
+		b.WriteString(key + value)
+	}
+
+	return fmt.Sprintf("%x", md5.Sum(b.Bytes()))
 }
 
 // Quality returns the picture quality for JPEG images.
