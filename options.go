@@ -35,12 +35,6 @@ func parseOptions(r *http.Request, extension string, img *image.Image) options {
 // to be applied in the requested image
 type options map[string]string
 
-// Has returns true if key exists in options
-func (o options) Has(key string) bool {
-	_, ok := o[key]
-	return ok
-}
-
 // Extension returns the desired extension
 func (o options) Extension() string {
 	return o["extension"]
