@@ -8,8 +8,8 @@ import (
 	"github.com/muesli/smartcrop/nfnt"
 )
 
-// ApplyEffects applies effects and transformations to the given image
-func ApplyEffects(img *image.Image, options options) {
+// ApplyTransformations applies transformations to the given image
+func ApplyTransformations(img *image.Image, options options) {
 	applyCrop(img, options)
 	applySmartCrop(img, options)
 	applyResize(img, options)
@@ -21,7 +21,7 @@ func ApplyEffects(img *image.Image, options options) {
 func applyResize(img *image.Image, options options) error {
 	width, height, err := options.Resize()
 	if err != nil {
-		return ErrEffectNotApplied
+		return ErrTransformationNotApplied
 	}
 
 	*img = transform.Resize(*img, width, height, transform.Linear)
@@ -32,7 +32,7 @@ func applyResize(img *image.Image, options options) error {
 func applyCrop(img *image.Image, options options) error {
 	width, height, x, y, err := options.Crop()
 	if err != nil {
-		return ErrEffectNotApplied
+		return ErrTransformationNotApplied
 	}
 
 	// calculate points
@@ -48,13 +48,13 @@ func applyCrop(img *image.Image, options options) error {
 func applySmartCrop(img *image.Image, options options) error {
 	width, height, err := options.SmartCrop()
 	if err != nil {
-		return ErrEffectNotApplied
+		return ErrTransformationNotApplied
 	}
 
 	analyzer := smartcrop.NewAnalyzer(nfnt.NewDefaultResizer())
 	rect, err := analyzer.FindBestCrop(*img, width, height)
 	if err != nil {
-		return ErrEffectNotApplied
+		return ErrTransformationNotApplied
 	}
 
 	*img = transform.Crop(*img, rect)
@@ -65,7 +65,7 @@ func applySmartCrop(img *image.Image, options options) error {
 func applyFlipH(img *image.Image, options options) error {
 	err := options.FlipH()
 	if err != nil {
-		return ErrEffectNotApplied
+		return ErrTransformationNotApplied
 	}
 
 	*img = transform.FlipH(*img)
@@ -76,7 +76,7 @@ func applyFlipH(img *image.Image, options options) error {
 func applyFlipV(img *image.Image, options options) error {
 	err := options.FlipV()
 	if err != nil {
-		return ErrEffectNotApplied
+		return ErrTransformationNotApplied
 	}
 
 	*img = transform.FlipV(*img)

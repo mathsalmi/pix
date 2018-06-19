@@ -30,7 +30,7 @@ var (
 
 // Error codes for effects/transformation process
 var (
-	ErrEffectNotApplied = errors.New("pix: effect not applied")
+	ErrTransformationNotApplied = errors.New("pix: effect not applied")
 )
 
 // fail writes the string representation of an error to the response
