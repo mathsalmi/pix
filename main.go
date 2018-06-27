@@ -37,13 +37,13 @@ func main() {
 
 	comm, ok := actionsFlag[os.Args[1]]
 	if !ok {
-		log.Fatalln(ErrInvalidFlag.Error())
+		log.Fatalln(ErrInvalidFlag)
 		return
 	}
 
 	err := comm()
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.Fatalln(err)
 	}
 }
 
