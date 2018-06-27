@@ -14,6 +14,7 @@ var (
 var (
 	ErrInvalidFlag         = errors.New("pix: invalid flag provided")
 	ErrCacheNoFilesDeleted = errors.New("pix: no files deleted")
+	ErrSetupEnvFile        = errors.New("pix: error creating the `server.env` file")
 )
 
 // Error codes returned by the download process

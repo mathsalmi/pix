@@ -14,36 +14,43 @@ import (
 var (
 	// list of actions supported
 	actionsFlag = map[string]func() error{
-		"init":         setupEnv,
+		"init":         SetupEnv,
 		"delete-cache": deleteCache,
 		"serve":        serve,
 	}
 )
 
-func init() {
-	// Load env file
-	err := godotenv.Load("server.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
-
 func main() {
 
+	var commName string
 	if len(os.Args) < 2 {
-		serve()
-		return
+		commName = "serve"
+	} else {
+		commName = os.Args[1]
 	}
 
-	comm, ok := actionsFlag[os.Args[1]]
+	comm, ok := actionsFlag[commName]
 	if !ok {
 		log.Fatalln(ErrInvalidFlag)
 		return
 	}
 
+	if commName != "init" {
+		loadEnv()
+	}
+
 	err := comm()
 	if err != nil {
 		log.Fatalln(err)
+	}
+}
+
+// loadEnv loads the server.env file and puts the values
+// in the env vars
+func loadEnv() {
+	err := godotenv.Load("server.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
 	}
 }
 
@@ -63,11 +70,6 @@ func deleteCache() error {
 	}
 
 	return nil
-}
-
-// setupEnv creates all files and directories needed to run Pix
-func setupEnv() error {
-	return ErrNotImplemented
 }
 
 // serve starts the webapp
