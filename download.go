@@ -88,7 +88,7 @@ func validateExtension(extension string) error {
 }
 
 // createNewPath returns the filename for an image given its name, extension and options
-func createNewPath(filename, extension string, options options) string {
+func createNewPath(filename, extension string, options *Options) string {
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	return fmt.Sprintf("%s/%s-%s.%s", uploadDir, filename, options.Hash(), extension)
 }

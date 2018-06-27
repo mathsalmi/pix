@@ -15,49 +15,110 @@ import (
 
 // parseOptions returns the transformation options extracted
 // from the request
-func parseOptions(r *http.Request, extension string, img *image.Image) options {
+func parseOptions(r *http.Request, extension string, img *image.Image) *Options {
 
-	options := make(options)
+	options := NewOptions()
 
 	values := r.URL.Query()
 	for key := range values {
-		options[key] = values.Get(key)
+		v, err := strconv.Atoi(values.Get(key))
+		if err != nil {
+			options.SetString(key, values.Get(key))
+		} else {
+			options.SetInt(key, v)
+		}
 	}
 
 	// set standard options
-	options["extension"] = extension
+	options.SetString("extension", extension)
 
 	width := (*img).Bounds().Max.X
 	height := (*img).Bounds().Max.Y
-	options["original_width"] = strconv.Itoa(width)
-	options["original_height"] = strconv.Itoa(height)
+	options.SetInt("original_width", width)
+	options.SetInt("original_height", height)
 
 	return options
 }
 
-// options holds the transformations settings
+// Options holds the transformations settings
 // to be applied in the requested image
-type options map[string]string
+type Options struct {
+	values map[string]interface{}
+}
+
+// NewOptions returns a new options with values
+func NewOptions() *Options {
+	return &Options{
+		values: make(map[string]interface{}),
+	}
+}
+
+// SetInt inserts an int value given its key in options
+func (o *Options) SetInt(key string, value int) {
+	o.values[key] = value
+}
+
+// SetString inserts a string value given its key in options
+func (o *Options) SetString(key, value string) {
+	o.values[key] = value
+}
+
+// Int returns an int value.Int
+//
+// ok returns false if the key does not exist or
+// if the value cannot be asserted into int type
+func (o Options) Int(key string) (int, bool) {
+	v, ok := o.values[key]
+	if !ok {
+		return 0, false
+	}
+
+	value, ok := v.(int)
+	if !ok {
+		return 0, false
+	}
+
+	return value, true
+}
+
+// String returns a string value
+//
+// ok returns false if the key does not exist or
+// if the value cannot be asserted into string type
+func (o Options) String(key string) (string, bool) {
+	v, ok := o.values[key]
+	if !ok {
+		return "", false
+	}
+
+	value, ok := v.(string)
+	if !ok {
+		return "", false
+	}
+
+	return value, true
+}
 
 // Extension returns the desired extension
-func (o options) Extension() string {
-	return o["extension"]
+func (o Options) Extension() string {
+	v, _ := o.String("extension")
+	return v
 }
 
 // Hash returns a unique string MD5 encoded that represents the
 // transformation options provided.
-func (o options) Hash() string {
+func (o Options) Hash() string {
 	b := new(bytes.Buffer)
 
-	s := make([]string, 0, len(o))
-	for key := range o {
+	s := make([]string, 0, len(o.values))
+	for key := range o.values {
 		s = append(s, key)
 	}
 
 	sort.Strings(s)
 
 	for _, key := range s {
-		value := o[key]
+		value, _ := o.String(key)
 		b.WriteString(key + value)
 	}
 
@@ -68,14 +129,9 @@ func (o options) Hash() string {
 //
 // If the provided value is an invalid number, less than 1,
 // or greater 100, 80 is returned instead.
-func (o options) Quality() int {
-	value, ok := o["quality"]
-	if !ok {
-		return 80
-	}
-
-	number, err := strconv.Atoi(value)
-	if err != nil || number < 1 || number > 100 {
+func (o Options) Quality() int {
+	number, ok := o.Int("quality")
+	if !ok || number < 1 || number > 100 {
 		return 80
 	}
 
@@ -85,14 +141,9 @@ func (o options) Quality() int {
 // NumColors returns the maximum number of colors used in GIF images.
 //
 // It ranges from 1 to 256.
-func (o options) NumColors() int {
-	value, ok := o["numcolors"]
-	if !ok {
-		return 256
-	}
-
-	number, err := strconv.Atoi(value)
-	if err != nil || number < 1 || number > 256 {
+func (o Options) NumColors() int {
+	number, ok := o.Int("numcolors")
+	if !ok || number < 1 || number > 256 {
 		return 256
 	}
 
@@ -101,7 +152,7 @@ func (o options) NumColors() int {
 
 // Encoder returns the image encoder accordingly to the desired
 // image extension
-func (o options) Encoder() imgio.Encoder {
+func (o Options) Encoder() imgio.Encoder {
 	switch o.Extension() {
 	case "jpg", "jpeg":
 		return imgio.JPEGEncoder(o.Quality())
@@ -116,30 +167,21 @@ func (o options) Encoder() imgio.Encoder {
 }
 
 // Resize calculates the new values for resizing the image.
-func (o options) Resize() (int, int, error) {
-	oWidth, hasWidth := o["width"]
-	oHeight, hasHeight := o["height"]
+func (o Options) Resize() (int, int, error) {
+	width, hasWidth := o.Int("width")
+	height, hasHeight := o.Int("height")
 
-	ooWidth, _ := o["original_width"]
-	ooHeight, _ := o["original_height"]
+	originalWidth, _ := o.Int("original_width")
+	originalHeight, _ := o.Int("original_height")
 
 	if !hasWidth && !hasHeight {
 		return 0, 0, ErrOptionNotProvided
 	}
 
-	width, height := 0, 0
-	originalWidth, _ := strconv.Atoi(ooWidth)
-	originalHeight, _ := strconv.Atoi(ooHeight)
-
 	// calculate values
-	if hasWidth && hasHeight {
-		width, _ = strconv.Atoi(oWidth)
-		height, _ = strconv.Atoi(oHeight)
-	} else if hasWidth && !hasHeight {
-		width, _ = strconv.Atoi(oWidth)
+	if hasWidth && !hasHeight {
 		height = (width * originalHeight) / originalWidth
 	} else if !hasWidth && hasHeight {
-		height, _ = strconv.Atoi(oHeight)
 		width = (height * originalWidth) / originalHeight
 	}
 
@@ -157,8 +199,8 @@ func (o options) Resize() (int, int, error) {
 //
 // It has to be applied to the original image, so the execution
 // order of transformation functions matters in this case.
-func (o options) Crop() (width int, height int, x int, y int, err error) {
-	s, ok := o["crop"]
+func (o Options) Crop() (width int, height int, x int, y int, err error) {
+	s, ok := o.String("crop")
 	if !ok {
 		err = ErrOptionNotProvided
 		return
@@ -180,16 +222,16 @@ func (o options) Crop() (width int, height int, x int, y int, err error) {
 		return
 	}
 
-	originalWidth := o["original_width"]
-	originalHeight := o["original_height"]
+	originalWidth, _ := o.Int("original_width")
+	originalHeight, _ := o.Int("original_height")
 
 	// check boundaries
-	if w, _ := strconv.Atoi(originalWidth); x > w || x+width > w {
+	if x > originalWidth || x+width > originalWidth {
 		err = ErrInvalidOptionValues
 		return
 	}
 
-	if h, _ := strconv.Atoi(originalHeight); y > h || y+height > h {
+	if y > originalHeight || y+height > originalHeight {
 		err = ErrInvalidOptionValues
 		return
 	}
@@ -201,8 +243,8 @@ func (o options) Crop() (width int, height int, x int, y int, err error) {
 //
 // It has to be applied to the original image, so the execution
 // order of transformation functions matters in this case.
-func (o options) SmartCrop() (width, height int, err error) {
-	s, ok := o["smartcrop"]
+func (o Options) SmartCrop() (width, height int, err error) {
+	s, ok := o.String("smartcrop")
 	if !ok {
 		err = ErrOptionNotProvided
 		return
@@ -222,16 +264,16 @@ func (o options) SmartCrop() (width, height int, err error) {
 		return
 	}
 
-	originalWidth := o["original_width"]
-	originalHeight := o["original_height"]
+	originalWidth, _ := o.Int("original_width")
+	originalHeight, _ := o.Int("original_height")
 
 	// check boundaries
-	if w, _ := strconv.Atoi(originalWidth); width > w {
+	if width > originalWidth {
 		err = ErrInvalidOptionValues
 		return
 	}
 
-	if h, _ := strconv.Atoi(originalHeight); height > h {
+	if height > originalHeight {
 		err = ErrInvalidOptionValues
 		return
 	}
@@ -241,8 +283,8 @@ func (o options) SmartCrop() (width, height int, err error) {
 
 // FlipH tells whether or not to apply the horizontal
 // flip transformation
-func (o options) FlipH() error {
-	_, ok := o["flipH"]
+func (o Options) FlipH() error {
+	_, ok := o.String("flipH")
 	if !ok {
 		return ErrOptionNotProvided
 	}
@@ -252,8 +294,8 @@ func (o options) FlipH() error {
 
 // FlipV tells whether or not to apply the vertical
 // flip transformation
-func (o options) FlipV() error {
-	_, ok := o["flipV"]
+func (o Options) FlipV() error {
+	_, ok := o.String("flipV")
 	if !ok {
 		return ErrOptionNotProvided
 	}

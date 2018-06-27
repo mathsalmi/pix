@@ -9,7 +9,7 @@ import (
 )
 
 // ApplyTransformations applies transformations to the given image
-func ApplyTransformations(img *image.Image, options options) {
+func ApplyTransformations(img *image.Image, options *Options) {
 	applyCrop(img, options)
 	applySmartCrop(img, options)
 	applyResize(img, options)
@@ -18,7 +18,7 @@ func ApplyTransformations(img *image.Image, options options) {
 }
 
 // applyResize resizes the given image given the options
-func applyResize(img *image.Image, options options) error {
+func applyResize(img *image.Image, options *Options) error {
 	width, height, err := options.Resize()
 	if err != nil {
 		return ErrTransformationNotApplied
@@ -29,7 +29,7 @@ func applyResize(img *image.Image, options options) error {
 }
 
 // applyCrop crops the given image given the options
-func applyCrop(img *image.Image, options options) error {
+func applyCrop(img *image.Image, options *Options) error {
 	width, height, x, y, err := options.Crop()
 	if err != nil {
 		return ErrTransformationNotApplied
@@ -45,7 +45,7 @@ func applyCrop(img *image.Image, options options) error {
 
 // applySmartCrop crops the image using the Smart Crop algorithm
 // applying the provided options
-func applySmartCrop(img *image.Image, options options) error {
+func applySmartCrop(img *image.Image, options *Options) error {
 	width, height, err := options.SmartCrop()
 	if err != nil {
 		return ErrTransformationNotApplied
@@ -62,7 +62,7 @@ func applySmartCrop(img *image.Image, options options) error {
 }
 
 // applyFlipH flips image horizontally
-func applyFlipH(img *image.Image, options options) error {
+func applyFlipH(img *image.Image, options *Options) error {
 	err := options.FlipH()
 	if err != nil {
 		return ErrTransformationNotApplied
@@ -73,7 +73,7 @@ func applyFlipH(img *image.Image, options options) error {
 }
 
 // applyFlipV flips image vertically
-func applyFlipV(img *image.Image, options options) error {
+func applyFlipV(img *image.Image, options *Options) error {
 	err := options.FlipV()
 	if err != nil {
 		return ErrTransformationNotApplied
