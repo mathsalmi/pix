@@ -63,36 +63,28 @@ func (o *Options) SetString(key, value string) {
 //
 // ok returns false if the key does not exist or
 // if the value cannot be asserted into int type
-func (o Options) Int(key string) (int, bool) {
+func (o Options) Int(key string) (value int, ok bool) {
 	v, ok := o.values[key]
 	if !ok {
 		return 0, false
 	}
 
-	value, ok := v.(int)
-	if !ok {
-		return 0, false
-	}
-
-	return value, true
+	value, ok = v.(int)
+	return value, ok
 }
 
 // String returns a string value
 //
 // ok returns false if the key does not exist or
 // if the value cannot be asserted into string type
-func (o Options) String(key string) (string, bool) {
+func (o Options) String(key string) (value string, ok bool) {
 	v, ok := o.values[key]
 	if !ok {
 		return "", false
 	}
 
-	value, ok := v.(string)
-	if !ok {
-		return "", false
-	}
-
-	return value, true
+	value, ok = v.(string)
+	return value, ok
 }
 
 // Image returns the image under modification
@@ -168,7 +160,7 @@ func (o Options) Encoder() imgio.Encoder {
 }
 
 // Resize calculates the new values for resizing the image.
-func (o Options) Resize() (int, int, error) {
+func (o Options) Resize() (width, height int, err error) {
 	width, hasWidth := o.Int("width")
 	height, hasHeight := o.Int("height")
 
@@ -200,17 +192,15 @@ func (o Options) Resize() (int, int, error) {
 //
 // It has to be applied to the original image, so the execution
 // order of transformation functions matters in this case.
-func (o Options) Crop() (width int, height int, x int, y int, err error) {
+func (o Options) Crop() (width, height, x, y int, err error) {
 	s, ok := o.String("crop")
 	if !ok {
-		err = ErrOptionNotProvided
-		return
+		return 0, 0, 0, 0, ErrOptionNotProvided
 	}
 
 	values, e := parseCropString(s)
 	if e != nil {
-		err = ErrInvalidOptionValues
-		return
+		return 0, 0, 0, 0, ErrInvalidOptionValues
 	}
 
 	width, hasWidth := values["w"]
@@ -219,8 +209,7 @@ func (o Options) Crop() (width int, height int, x int, y int, err error) {
 	y, hasY := values["y"]
 
 	if !hasWidth || !hasHeight || !hasX || !hasY {
-		err = ErrInvalidOptionValues
-		return
+		return 0, 0, 0, 0, ErrInvalidOptionValues
 	}
 
 	originalWidth := o.Image().Width()
@@ -228,16 +217,14 @@ func (o Options) Crop() (width int, height int, x int, y int, err error) {
 
 	// check boundaries
 	if x > originalWidth || x+width > originalWidth {
-		err = ErrInvalidOptionValues
-		return
+		return 0, 0, 0, 0, ErrInvalidOptionValues
 	}
 
 	if y > originalHeight || y+height > originalHeight {
-		err = ErrInvalidOptionValues
-		return
+		return 0, 0, 0, 0, ErrInvalidOptionValues
 	}
 
-	return
+	return width, height, x, y, nil
 }
 
 // SmartCrop gets the options to apply the smart crop algorithm
@@ -247,22 +234,19 @@ func (o Options) Crop() (width int, height int, x int, y int, err error) {
 func (o Options) SmartCrop() (width, height int, err error) {
 	s, ok := o.String("smartcrop")
 	if !ok {
-		err = ErrOptionNotProvided
-		return
+		return 0, 0, ErrOptionNotProvided
 	}
 
 	values, e := parseCropString(s)
 	if e != nil {
-		err = ErrInvalidOptionValues
-		return
+		return 0, 0, ErrInvalidOptionValues
 	}
 
 	width, hasWidth := values["w"]
 	height, hasHeight := values["h"]
 
 	if !hasWidth || !hasHeight {
-		err = ErrInvalidOptionValues
-		return
+		return 0, 0, ErrInvalidOptionValues
 	}
 
 	originalWidth := o.Image().Width()
@@ -270,16 +254,14 @@ func (o Options) SmartCrop() (width, height int, err error) {
 
 	// check boundaries
 	if width > originalWidth {
-		err = ErrInvalidOptionValues
-		return
+		return 0, 0, ErrInvalidOptionValues
 	}
 
 	if height > originalHeight {
-		err = ErrInvalidOptionValues
-		return
+		return 0, 0, ErrInvalidOptionValues
 	}
 
-	return
+	return width, height, nil
 }
 
 // FlipH tells whether or not to apply the horizontal
@@ -317,25 +299,22 @@ func parseCropString(s string) (values map[string]int, err error) {
 	for _, pair := range pairs {
 		v := strings.Split(pair, ":")
 		if len(v) != 2 {
-			err = ErrInvalidOptionValues
-			return
+			return nil, ErrInvalidOptionValues
 		}
 
 		key := v[0]
 		value, e := strconv.Atoi(v[1])
 		if e != nil {
-			err = ErrInvalidOptionValues
-			return
+			return nil, ErrInvalidOptionValues
 		}
 
 		// check boundaries - fast fail
 		if value < 0 {
-			err = ErrInvalidOptionValues
-			return
+			return nil, ErrInvalidOptionValues
 		}
 
 		values[key] = value
 	}
 
-	return
+	return values, nil
 }
