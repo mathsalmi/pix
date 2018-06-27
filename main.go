@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -52,24 +50,6 @@ func loadEnv() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-}
-
-// deleteCache deleted all cached images
-func deleteCache() error {
-	uploadDir := os.Getenv("UPLOAD_DIR")
-
-	filepaths, err := filepath.Glob(fmt.Sprintf("%s/*-*.*", uploadDir))
-	if err != nil {
-		return ErrCacheNoFilesDeleted
-	}
-
-	for _, file := range filepaths {
-		if err := os.Remove(file); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 // serve starts the webapp

@@ -94,9 +94,3 @@ func createNewPath(filename, extension string, options *Options) string {
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	return fmt.Sprintf("%s/%s-%s.%s", uploadDir, filename, options.Hash(), extension)
 }
-
-// isCached returns true if image already exists or false if it does not
-func isCached(filepath string) bool {
-	_, err := os.Stat(filepath)
-	return !os.IsNotExist(err)
-}
