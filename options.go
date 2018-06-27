@@ -83,8 +83,17 @@ func (o Options) String(key string) (value string, ok bool) {
 		return "", false
 	}
 
-	value, ok = v.(string)
-	return value, ok
+	switch tmp := v.(type) {
+	case int:
+		value = string(tmp)
+	case string:
+		value = tmp
+	case bool:
+		value = fmt.Sprint(tmp)
+	default:
+		return "", false
+	}
+	return value, true
 }
 
 // Image returns the image under modification
