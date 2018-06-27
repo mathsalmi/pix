@@ -9,7 +9,7 @@ import (
 )
 
 // ApplyTransformations applies transformations to the given image
-func ApplyTransformations(img *image.Image, options *Options) {
+func ApplyTransformations(img *Image, options *Options) {
 	applyCrop(img, options)
 	applySmartCrop(img, options)
 	applyResize(img, options)
@@ -18,18 +18,18 @@ func ApplyTransformations(img *image.Image, options *Options) {
 }
 
 // applyResize resizes the given image given the options
-func applyResize(img *image.Image, options *Options) error {
+func applyResize(img *Image, options *Options) error {
 	width, height, err := options.Resize()
 	if err != nil {
 		return ErrTransformationNotApplied
 	}
 
-	*img = transform.Resize(*img, width, height, transform.Linear)
+	*img = Image{transform.Resize(*img, width, height, transform.Linear)}
 	return nil
 }
 
 // applyCrop crops the given image given the options
-func applyCrop(img *image.Image, options *Options) error {
+func applyCrop(img *Image, options *Options) error {
 	width, height, x, y, err := options.Crop()
 	if err != nil {
 		return ErrTransformationNotApplied
@@ -39,13 +39,13 @@ func applyCrop(img *image.Image, options *Options) error {
 	x1 := x + width
 	y1 := y + height
 
-	*img = transform.Crop(*img, image.Rect(x, y, x1, y1))
+	*img = Image{transform.Crop(*img, image.Rect(x, y, x1, y1))}
 	return nil
 }
 
 // applySmartCrop crops the image using the Smart Crop algorithm
 // applying the provided options
-func applySmartCrop(img *image.Image, options *Options) error {
+func applySmartCrop(img *Image, options *Options) error {
 	width, height, err := options.SmartCrop()
 	if err != nil {
 		return ErrTransformationNotApplied
@@ -57,28 +57,28 @@ func applySmartCrop(img *image.Image, options *Options) error {
 		return ErrTransformationNotApplied
 	}
 
-	*img = transform.Crop(*img, rect)
+	*img = Image{transform.Crop(*img, rect)}
 	return nil
 }
 
 // applyFlipH flips image horizontally
-func applyFlipH(img *image.Image, options *Options) error {
+func applyFlipH(img *Image, options *Options) error {
 	err := options.FlipH()
 	if err != nil {
 		return ErrTransformationNotApplied
 	}
 
-	*img = transform.FlipH(*img)
+	*img = Image{transform.FlipH(*img)}
 	return nil
 }
 
 // applyFlipV flips image vertically
-func applyFlipV(img *image.Image, options *Options) error {
+func applyFlipV(img *Image, options *Options) error {
 	err := options.FlipV()
 	if err != nil {
 		return ErrTransformationNotApplied
 	}
 
-	*img = transform.FlipV(*img)
+	*img = Image{transform.FlipV(*img)}
 	return nil
 }

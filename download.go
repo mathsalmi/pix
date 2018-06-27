@@ -42,17 +42,19 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 
 	filepath := filepaths[0]
 
-	img, err := imgio.Open(filepath)
+	originalImage, err := imgio.Open(filepath)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	options := parseOptions(r, extension, &img)
+	img := &Image{originalImage}
+
+	options := parseOptions(r, extension, img)
 	newpath := createNewPath(filename, extension, options)
 
 	if !isCached(newpath) {
-		ApplyTransformations(&img, options)
+		ApplyTransformations(img, options)
 
 		if err := imgio.Save(newpath, img, options.Encoder()); err != nil {
 			fail(w, err, http.StatusInternalServerError)

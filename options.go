@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"image"
 	"net/http"
 	"sort"
 	"strconv"
@@ -15,7 +14,7 @@ import (
 
 // parseOptions returns the transformation options extracted
 // from the request
-func parseOptions(r *http.Request, extension string, img *image.Image) *Options {
+func parseOptions(r *http.Request, extension string, img *Image) *Options {
 
 	options := NewOptions()
 
@@ -31,11 +30,7 @@ func parseOptions(r *http.Request, extension string, img *image.Image) *Options 
 
 	// set standard options
 	options.SetString("extension", extension)
-
-	width := (*img).Bounds().Max.X
-	height := (*img).Bounds().Max.Y
-	options.SetInt("original_width", width)
-	options.SetInt("original_height", height)
+	options.img = img
 
 	return options
 }
@@ -44,6 +39,7 @@ func parseOptions(r *http.Request, extension string, img *image.Image) *Options 
 // to be applied in the requested image
 type Options struct {
 	values map[string]interface{}
+	img    *Image
 }
 
 // NewOptions returns a new options with values
@@ -97,6 +93,11 @@ func (o Options) String(key string) (string, bool) {
 	}
 
 	return value, true
+}
+
+// Image returns the image under modification
+func (o Options) Image() *Image {
+	return o.img
 }
 
 // Extension returns the desired extension
@@ -171,8 +172,8 @@ func (o Options) Resize() (int, int, error) {
 	width, hasWidth := o.Int("width")
 	height, hasHeight := o.Int("height")
 
-	originalWidth, _ := o.Int("original_width")
-	originalHeight, _ := o.Int("original_height")
+	originalWidth := o.Image().Width()
+	originalHeight := o.Image().Height()
 
 	if !hasWidth && !hasHeight {
 		return 0, 0, ErrOptionNotProvided
@@ -222,8 +223,8 @@ func (o Options) Crop() (width int, height int, x int, y int, err error) {
 		return
 	}
 
-	originalWidth, _ := o.Int("original_width")
-	originalHeight, _ := o.Int("original_height")
+	originalWidth := o.Image().Width()
+	originalHeight := o.Image().Height()
 
 	// check boundaries
 	if x > originalWidth || x+width > originalWidth {
@@ -264,8 +265,8 @@ func (o Options) SmartCrop() (width, height int, err error) {
 		return
 	}
 
-	originalWidth, _ := o.Int("original_width")
-	originalHeight, _ := o.Int("original_height")
+	originalWidth := o.Image().Width()
+	originalHeight := o.Image().Height()
 
 	// check boundaries
 	if width > originalWidth {
