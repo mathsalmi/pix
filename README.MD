@@ -37,7 +37,7 @@ URLs
 Libraries
 ---------
 
-Here is the list of third-party libraries used in this project. I want to thank each author big time for their time and great work :+1:
+Here is the list of third-party libraries used in this project. A big thank you for each author for their time and great work!
 
 - **[bild](https://github.com/anthonynsimon/bild)**: image manipulation
 - **[mux](https://github.com/gorilla/mux)**: URL router
