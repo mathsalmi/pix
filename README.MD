@@ -24,7 +24,7 @@ Options
 * nude detection
 * JPEG interlace
 * properly handle animated GIF
-* custom URLs: create virtual hosts and associate a set of rules, like: `/user-pictures/file1.jpg`
+* custom URLs: create virtual hosts and associate a set of rules, like: `/user-pictures/file1.jpg`e
 
 URLs
 ----
@@ -33,3 +33,14 @@ URLs
 | ---- | ---- | ----------- |
 | POST | /    | Upload images |
 | GET  | /`{image_name}`.`{extension}`?`option1=value1...&optionN=valueN` | Retrieve images and optionally apply effects and transformations |
+
+Libraries
+---------
+
+Here is the list of third-party libraries used in this project. I want to thank each author big time for their time and great work :+1:
+
+- **[bild](https://github.com/anthonynsimon/bild)**: image manipulation
+- **[mux](https://github.com/gorilla/mux)**: URL router
+- **[godotenv](https://github.com/joho/godotenv)**: .env file reader for Go
+- **[smartcrop](https://github.com/muesli/smartcrop)**: good image crops
+- **[ksuid](https://github.com/segmentio/ksuid)**: K-Sortable Globally Unique IDs
