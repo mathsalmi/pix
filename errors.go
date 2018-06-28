@@ -8,6 +8,7 @@ import (
 // General error codes
 var (
 	ErrNotImplemented = errors.New("pix: not implemented")
+	ErrInternalServer = errors.New("pix: server is improperly set up")
 )
 
 // Error codes used in CLI flag parsing
@@ -32,6 +33,13 @@ var (
 // Error codes for effects/transformation process
 var (
 	ErrTransformationNotApplied = errors.New("pix: effect not applied")
+)
+
+// Error codes used in the upload process
+var (
+	ErrInvalidUpload   = errors.New("pix: invalid upload")
+	ErrFileTooBig      = errors.New("pix: upload: file too big")
+	ErrInvalidFileType = errors.New("pix: upload: invalid file type")
 )
 
 // fail writes the string representation of an error to the response

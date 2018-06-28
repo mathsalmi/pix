@@ -7,8 +7,9 @@ import (
 // DefaultServerOptions provides the values for creating
 // a default `server.env` file
 var DefaultServerOptions = map[string]string{
-	"SERVER_PORT": "8000",
-	"UPLOAD_DIR":  "~/pix/upload",
+	"SERVER_PORT":     "8000",
+	"UPLOAD_DIR":      "~/pix/upload",
+	"MAX_UPLOAD_SIZE": "5242880",
 }
 
 // SetupEnv creates all files and directories needed to run Pix
